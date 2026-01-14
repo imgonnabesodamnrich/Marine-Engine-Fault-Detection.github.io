@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可解释故障诊断论文笔记——热力学仿真辅助随机森林（TSRF）</title>
+    <style>
+        :root {
+            --primary-color: #0366d6;
+            --sidebar-bg: #f8f9fa;
+            --content-max-width: 900px;
+            --border-color: #d0d7de;
+            --text-color: #1f2328;
+            --link-color: #0969da;
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-color);
+            margin: 0;
+            background-color: #ffffff;
+            display: flex;
+        }
+
+        /* 侧边栏目录样式 */
+        .toc-sidebar {
+            width: 300px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .toc-sidebar h2 { font-size: 1.2rem; margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .toc-sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .toc-sidebar li { margin: 10px 0; }
+        .toc-sidebar a { 
+            text-decoration: none; 
+            color: var(--text-color); 
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+        .toc-sidebar a:hover { color: var(--link-color); }
+        .toc-sidebar .sub-item { padding-left: 20px; font-size: 0.85rem; }
+
+        /* 内容区布局 */
+        .main-content {
+            margin-left: 300px;
+            flex: 1;
+            padding: 40px 60px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: var(--content-max-width);
+        }
+
+        /* 标题排版 */
+        h1 { font-size: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; margin-bottom: 1.5rem; }
+        h2 { font-size: 1.5rem; margin-top: 2.5rem; padding-bottom: 0.3em; border-bottom: 1px solid #eaecef; }
+        h3 { font-size: 1.25rem; margin-top: 1.5rem; color: #333; }
+
+        /* 引用块 */
+        blockquote {
+            padding: 0 1em;
+            color: #636c76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 1.5rem 0;
+            background: #fcfcfc;
+        }
+
+        /* 图片样式 */
+        .img-wrapper { text-align: center; margin: 2rem 0; }
+        .img-wrapper img { 
+            max-width: 100%; 
+            height: auto; 
+            border-radius: 4px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+            border: 1px solid var(--border-color);
+        }
+        .img-caption { display: block; margin-top: 8px; font-size: 0.9rem; color: #666; font-style: italic; }
+
+        /* 表格排版 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0 1.5rem;
+            display: block;
+            overflow-x: auto;
+        }
+        th, td {
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+        }
+        th { background-color: #f6f8fa; font-weight: 600; }
+        tr:nth-child(2n) { background-color: #fdfdfd; }
+        tr:hover { background-color: #f8f9fa; }
+
+        /* 代码块与BibTeX */
+        pre {
+            background-color: #f6f8fa;
+            padding: 16px;
+            border-radius: 6px;
+            overflow: auto;
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+            font-size: 0.9rem;
+            line-height: 1.45;
+            border: 1px solid #e1e4e8;
+        }
+
+        /* 详情/参数列表美化 */
+        details {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            background: #fafafa;
+        }
+        summary { cursor: pointer; font-weight: 600; color: var(--link-color); outline: none; }
+
+        /* 移动端适配 */
+        @media (max-width: 850px) {
+            .toc-sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 侧边栏 -->
+    <nav class="toc-sidebar">
+        <h2>📑 目录</h2>
+        <ul>
+            <li><a href="#background">研究背景 (Background)</a></li>
+            <li><a href="#methodology">热力学仿真辅助随机森林 (Methodology)</a></li>
+            <li class="sub-item"><a href="#method-1">1. 一维热力学建模</a></li>
+            <li class="sub-item"><a href="#method-2">2. 基于 SHAP 的特征工程</a></li>
+            <li class="sub-item"><a href="#method-3">3. 随机森林诊断模型</a></li>
+            <li><a href="#why-shap-rf">为什么是 SHAP + RF?</a></li>
+            <li><a href="#results">实验结果与分析 (Results)</a></li>
+            <li><a href="#case-study">案例研究：活塞环磨损 (Case Study)</a></li>
+            <li><a href="#bibtex">论文链接与 BibTeX</a></li>
+        </ul>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <div class="container">
+            <header>
+                <h1>可解释故障诊断论文笔记——热力学仿真辅助随机森林（Thermodynamic Simulation-assisted Random Forest, TSRF）</h1>
+                
+                <blockquote>
+                    <p><strong>An Explainable Fault Diagnosis Framework for Marine Diesel Engines</strong></p>
+                    <p><strong>Paper Title:</strong> <em>Thermodynamic simulation-assisted random forest: Towards explainable fault diagnosis of combustion chamber components of marine diesel engines</em><br>
+                    <strong>Journal:</strong> <em>Measurement</em> (Elsevier), Vol. 251, 2025<br>
+                    <strong>DOI:</strong> <a href="https://doi.org/10.1016/j.measurement.2025.117252">10.1016/j.measurement.2025.117252</a></p>
+                </blockquote>
+
+                <p>
+                    <img src="https://img.shields.io/badge/DOI-10.1016%2Fj.measurement.2025.117252-blue" alt="DOI">
+                    <img src="https://img.shields.io/badge/Status-Published-success" alt="Status">
+                    <img src="https://img.shields.io/badge/Topic-Explainable%20AI-orange" alt="Topic">
+                </p>
+            </header>
+
+            <section id="background">
+                <h2>🔍 研究背景 (Background)</h2>
+                <h3>1. 关键问题 (The Criticality)</h3>
+                <p>柴油机是船舶推进系统的关键部件,其内部结构复杂、部件众多。其中，<strong>燃烧室组件（Combustion Chamber Components）</strong>——包括气缸盖、气缸套、活塞等——对柴油机的功能至关重要。 由于长期处于高温、高压的恶劣运行环境，燃烧室是柴油机中最容易发生故障的部位之一。这些故障不仅会损害发动机性能，还会威胁航行安全。因此，通过监测热力学参数进行早期故障诊断，对于维护计划制定和成本控制至关重要。</p>
+
+                <h3>2. 现有方法的局限性 (Limitations of Current Approaches)</h3>
+                <ul>
+                    <li><strong>模型驱动方法 (Model-Based):</strong> 基于物理定律和工程知识构建数学模型。局限：建模过程复杂，难以应对非线性系统和复杂的变量交互，缺乏灵活性。</li>
+                    <li><strong>数据驱动方法 (Data-Driven):</strong> 利用机器学习/深度学习自动学习故障特征。局限：严重依赖数据质量和数量。现实中故障数据极度稀缺，导致模型泛化能力差；且模型往往是“黑箱”，难以解释决策背后的物理逻辑。</li>
+                    <li><strong>混合方法 (Hybrid):</strong> 结合物理模型与数据驱动方法。局限：现有混合方法大多仅将物理模型作为数据生成工具，缺乏对模型决策过程的深入机理分析，导致计算成本高且解释性依然不足。</li>
+                </ul>
+
+                <h3>3. TSRF 的切入点 (Motivation)</h3>
+                <p>针对上述问题，TSRF旨在解决传统智能诊断方法面临的两大挑战：</p>
+                <ol>
+                    <li><strong>泛化能力低 (Low Generalizability):</strong> 由于缺乏故障训练样本，传统模型难以覆盖真实工况。</li>
+                    <li><strong>可解释性差 (Poor Explainability):</strong> 由于缺乏对故障机理的领域知识融合，传统模型难以让人信服。</li>
+                </ol>
+                <p><strong>TSRF 方法的核心思路是：</strong> 利用热力学仿真揭示故障特征，将其作为先验知识嵌入智能诊断模型，并通过 SHAP 值从全局和局部两个维度通过数据量化故障机理，实现可解释故障诊断。</p>
+            </section>
+
+            <section id="methodology">
+                <h2>🛠 热力学仿真辅助随机森林的核心方法论 (Methodology)</h2>
+                <p>TSRF 框架由三个核心模块组成：数据生成、特征筛选与解释、故障分类。</p>
+                
+                <div class="img-wrapper">
+                    <img src="https://github.com/user-attachments/assets/b816c11c-e2f3-495e-8007-81ee097a5899" alt="SHAP Flow">
+                    <span class="img-caption">图1 基于 SHAP 的参数筛选流程</span>
+                </div>
+
+                <h3 id="method-1">1. 一维热力学建模与故障仿真 (Thermodynamic Modeling)</h3>
+                <p>构建了一个船舶柴油机一维热力学模型（1D Thermodynamic Model），并通过实验数据进行了校准。</p>
+                <div class="img-wrapper">
+                    <img src="https://github.com/user-attachments/assets/cfee6fe5-ab4a-4fb5-aa43-cf26e9a6a093" alt="Model Scheme">
+                    <span class="img-caption">图2 船用柴油机热动力学模型方案</span>
+                </div>
+
+                <p>基于该模型，定义了物理参数微调策略，以模拟以下 5 种典型故障：</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>故障代码</th>
+                            <th>故障类型 (Fault Type)</th>
+                            <th>物理参数微调策略</th>
+                            <th>物理机制简述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>F0</strong></td><td>正常状态 (Normal)</td><td>N/A</td><td>基准状态</td></tr>
+                        <tr><td><strong>F1</strong></td><td>气缸盖裂纹 (Head cracking)</td><td>调高气缸盖表面温度</td><td>裂纹导致散热效率降低，局部热失控</td></tr>
+                        <tr><td><strong>F2</strong></td><td>活塞烧蚀 (Piston ablation)</td><td>调高活塞表面温度, 调高漏气量</td><td>材料剥落破坏密封，导致高温燃气泄漏</td></tr>
+                        <tr><td><strong>F3</strong></td><td>气缸套磨损 (Liner wear)</td><td>调高缸径, 调高漏气量</td><td>磨损间隙增大，导致压缩气体泄漏</td></tr>
+                        <tr><td><strong>F4</strong></td><td>活塞环磨损 (Ring wear)</td><td>调高漏气量</td><td>密封失效，直接导致 Blow-by 现象加剧</td></tr>
+                        <tr><td><strong>F5</strong></td><td>活塞环粘着 (Ring sticking)</td><td>调高缸径, 调高活塞温度, 调高漏气量</td><td>环运动受阻，热阻增加，传热恶化</td></tr>
+                    </tbody>
+                </table>
+                <blockquote><em>注：通过这种方式，将故障特征与明确的物理参数关联起来，实现了“机理驱动的数据增强”。</em></blockquote>
+
+                <h3 id="method-2">2. 基于 SHAP 的特征工程 (SHAP Analysis)</h3>
+                <p>面对仿真输出的众多热力学参数，引入了 <strong>SHAP (SHapley Additive exPlanations)</strong> 值来定量评估每个参数对故障诊断的边际贡献。</p>
+                <ul>
+                    <li><strong>Tree SHAP 算法</strong>：相比于传统的特征选择方法，SHAP 能够捕捉特征间的非线性交互作用。</li>
+                </ul>
+                <div class="img-wrapper">
+                    <img src="https://github.com/user-attachments/assets/d8f0503a-4342-41df-8536-09a36673c249" alt="Tree SHAP Contrast">
+                    <span class="img-caption">图3 SHAP 与 Tree SHAP 对比</span>
+                </div>
+                <p>研究发现，<strong>涡轮后排气温度 (P14)</strong>、<strong>漏气热流 (P06)</strong> 和 <strong>气缸套热流 (P05)</strong> 是区分不同故障模式的最关键指标。</p>
+
+                <h3 id="method-3">3. 随机森林诊断模型 (Random Forest)</h3>
+                <p>采用随机森林作为分类器，不仅因其在小样本下具有鲁棒性，更因其树结构天然适配 SHAP 解析。模型输入为经过筛选的热力学参数，输出为具体的故障类别。</p>
+            </section>
+
+            <section id="why-shap-rf">
+                <h2>🎓 为什么是 SHAP + RF?</h2>
+                <h3>1. 什么是 SHAP？</h3>
+                <blockquote>
+                    <p>🍎 <strong>举个例子：</strong> 假设你们 3 个人（特征 A, B, C）组队打比赛赢了 100 分。怎么分配奖金才公平？单纯看谁得分多是不够的，还要看<strong>如果没有你，团队会少得多少分</strong>。</p>
+                </blockquote>
+                <ul>
+                    <li><strong>SHAP 做的事：</strong> 它计算每个特征（比如“排气温度”）对最终预测结果的边际贡献。</li>
+                    <li><strong>结果：</strong> 它不仅告诉你哪个参数重要，还能告诉你它是正向推动（导致故障）还是负向抑制（由于它正常，所以没故障）。</li>
+                </ul>
+
+                <h3>2. 为什么要用“随机森林”而不是“神经网络”？</h3>
+                <ul>
+                    <li>随机森林在几百个样本下就能训练出极高的准确率，而神经网络通常需要大量样本。</li>
+                    <li>热力学参数是典型的结构化表格数据，树模型往往比神经网络表现更好。</li>
+                </ul>
+
+                <h3>3. "SHAP + 随机森林" 的化学反应：白盒化</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>特性</th>
+                            <th>传统 AI 诊断 (CNN/SVM)</th>
+                            <th>TSRF (RF + SHAP)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>诊断结果</strong></td><td>"这是 F4 故障。"</td><td>"这是 F4，因为 P06 (漏气热流) 异常升高了。"</td></tr>
+                        <tr><td><strong>物理意义</strong></td><td>无 (纯数学拟合)</td><td>有 (对应物理机理)</td></tr>
+                        <tr><td><strong>用户信任度</strong></td><td>低 (工程师不敢信)</td><td>高 (符合经验，敢拆机维修)</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="results">
+                <h2>📊 实验结果与分析 (Results)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Mean Accuracy</th>
+                            <th>Precision</th>
+                            <th>Recall</th>
+                            <th>Interpretability</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>KNN</td><td>89.81%</td><td>90.94%</td><td>89.81%</td><td>Low</td></tr>
+                        <tr><td>SVM</td><td>92.13%</td><td>92.91%</td><td>92.13%</td><td>Medium</td></tr>
+                        <tr><td><strong>TSRF</strong></td><td><strong>99.07%</strong></td><td><strong>94.66%</strong></td><td><strong>94.44%</strong></td><td><strong>High</strong></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="case-study">
+                <h2>💡 案例研究：活塞环磨损 (Case Study)</h2>
+                <div class="img-wrapper">
+                    <img src="https://github.com/user-attachments/assets/251899ec-aed6-4161-9958-aab7a55cc108" alt="F4 Case Analysis">
+                    <span class="img-caption">图4 基于 SHAP 值的活塞环磨损 (F4) 故障分析：(a) 瀑布图；(b) 蜂群图；(c) 交互图；(d) 依赖图</span>
+                </div>
+
+                <details>
+                    <summary>点击查看完整热力学参数列表（P01-P14）</summary>
+                    <table>
+                        <thead>
+                            <tr><th>编号</th><th>参数名称</th><th>单位</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>P01</td><td>缸内压力 (Cylinder Pressure)</td><td>Pa</td></tr>
+                            <tr><td>P02</td><td>缸内温度 (Cylinder Temperature)</td><td>K</td></tr>
+                            <tr><td>P03</td><td>活塞壁面热流 (Piston Wall Heat Flow)</td><td>J/deg</td></tr>
+                            <tr><td>P04</td><td>气缸盖壁面热流 (Head Wall Heat Flow)</td><td>J/deg</td></tr>
+                            <tr><td>P05</td><td>气缸套壁面热流 (Liner Wall Heat Flow)</td><td>J/deg</td></tr>
+                            <tr><td>P06</td><td>漏气热流 (Blow-By Heat Flow)</td><td>J/deg</td></tr>
+                            <tr><td>P07</td><td>漏气质量流量 (Blow-By Mass Flow)</td><td>Kg/s</td></tr>
+                            <tr><td>P08</td><td>涡轮功率 (Turbine Power)</td><td>J/s</td></tr>
+                            <tr><td>P09</td><td>排气压力 (Pressure of Exhaust)</td><td>Pa</td></tr>
+                            <tr><td>P10</td><td>排气温度 (Temperature of Exhaust)</td><td>K</td></tr>
+                            <tr><td>P11</td><td>涡轮前排气压力 (Pressure before Turbo)</td><td>Pa</td></tr>
+                            <tr><td>P12</td><td>涡轮前排气温度 (Temp. before Turbo)</td><td>K</td></tr>
+                            <tr><td>P13</td><td>涡轮后排气压力 (Pressure after Turbo)</td><td>Pa</td></tr>
+                            <tr><td>P14</td><td>涡轮后排气温度 (Temp. after Turbo)</td><td>K</td></tr>
+                        </tbody>
+                    </table>
+                </details>
+
+                <ol>
+                    <li><strong>全局视角</strong>：SHAP Summary Plot 显示对于 F4 故障，漏气相关参数的权重显著上升。</li>
+                    <li><strong>局部视角</strong>：SHAP 瀑布图揭示决策路径：<strong>P06 = 1.641</strong>（高于正常值）且 <strong>P14</strong> 波动共同推动了 F4 的判定。</li>
+                </ol>
+            </section>
+
+            <section id="bibtex">
+                <h2>📚 论文链接</h2>
+                <pre>@article{Luo2025TSRF,
+  title = {Thermodynamic simulation-assisted random forest: Towards explainable fault diagnosis of combustion chamber components of marine diesel engines},
+  author = {Congcong Luo and Minghang Zhao and Xuyun Fu and Shisheng Zhong and Song Fu and Kai Zhang and Xiaoxia Yu},
+  journal = {Measurement},
+  volume = {251},
+  pages = {117252},
+  year = {2025},
+  doi = {10.1016/j.measurement.2025.117252},
+  publisher = {Elsevier}
+}</pre>
+                <p>👉 完整资源包：<strong><a href="https://ts-rf.github.io/zh-CN/">https://ts-rf.github.io/zh-CN/</a></strong></p>
+            </section>
+        </div>
+    </main>
+
+</body>
+</html>
