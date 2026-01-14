@@ -197,7 +197,7 @@
 
             <section id="methodology">
                 <h2>🛠 热力学仿真辅助随机森林的核心方法论 (Methodology)</h2>
-                <p>TSRF 框架由三个核心模块组成：数据生成、特征筛选与解释、故障分类。</p>
+                <p>如图1所示，TSRF 框架由三个核心模块组成：数据生成、特征筛选与解释、故障分类。</p>
                 
                 <div class="img-wrapper">
                     <img src="https://github.com/user-attachments/assets/b816c11c-e2f3-495e-8007-81ee097a5899" alt="SHAP Flow">
@@ -205,7 +205,7 @@
                 </div>
 
                 <h3 id="method-1">1. 一维热力学建模与故障仿真 (Thermodynamic Modeling)</h3>
-                <p>构建了一个船舶柴油机一维热力学模型（1D Thermodynamic Model），并通过实验数据进行了校准。</p>
+                <p>如图2所示，构建了一个船舶柴油机一维热力学模型（1D Thermodynamic Model），并通过实验数据进行了校准。</p>
                 <div class="img-wrapper">
                     <img src="https://github.com/user-attachments/assets/cfee6fe5-ab4a-4fb5-aa43-cf26e9a6a093" alt="Model Scheme">
                     <span class="img-caption">图2 船用柴油机热动力学模型方案</span>
@@ -235,7 +235,7 @@
                 <h3 id="method-2">2. 基于 SHAP 的特征工程 (SHAP Analysis)</h3>
                 <p>面对仿真输出的众多热力学参数，引入了 <strong>SHAP (SHapley Additive exPlanations)</strong> 值来定量评估每个参数对故障诊断的边际贡献。</p>
                 <ul>
-                    <li><strong>Tree SHAP 算法</strong>：相比于传统的特征选择方法，SHAP 能够捕捉特征间的非线性交互作用。</li>
+                    <li><strong>Tree SHAP 算法</strong>：如图3所示，相比于传统的特征选择方法，SHAP 能够捕捉特征间的非线性交互作用。</li>
                 </ul>
                 <div class="img-wrapper">
                     <img src="https://github.com/user-attachments/assets/d8f0503a-4342-41df-8536-09a36673c249" alt="Tree SHAP Contrast">
@@ -303,6 +303,7 @@
 
             <section id="case-study">
                 <h2>💡 案例研究：活塞环磨损 (Case Study)</h2>
+                <p>为了展示模型的可解释性，以 活塞环磨损 (F4) 为例进行深度分析，如图4所示：</p>
                 <div class="img-wrapper">
                     <img src="https://github.com/user-attachments/assets/251899ec-aed6-4161-9958-aab7a55cc108" alt="F4 Case Analysis">
                     <span class="img-caption">图4 基于 SHAP 值的活塞环磨损 (F4) 故障分析：(a) 瀑布图；(b) 蜂群图；(c) 交互图；(d) 依赖图</span>
@@ -357,4 +358,5 @@
     </main>
 
 </body>
+
 </html>
