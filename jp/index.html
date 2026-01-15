@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>論文ノート - TSRF 船舶エンジンの可説明な故障診断</title>
+    <style>
+        /* 保持与中文/英文版完全一致的 CSS 样式 */
+        :root {
+            --primary-color: #0366d6;
+            --sidebar-bg: #f8f9fa;
+            --content-max-width: 900px;
+            --border-color: #d0d7de;
+            --text-color: #1f2328;
+            --link-color: #0969da;
+        }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-color);
+            margin: 0;
+            background-color: #ffffff;
+            display: flex;
+        }
+        .toc-sidebar {
+            width: 300px; height: 100vh; position: fixed; left: 0; top: 0;
+            background: var(--sidebar-bg); border-right: 1px solid var(--border-color);
+            padding: 20px; overflow-y: auto; z-index: 10;
+        }
+        .toc-sidebar h2 { font-size: 1.2rem; margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .toc-sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .toc-sidebar li { margin: 10px 0; }
+        .toc-sidebar a { text-decoration: none; color: var(--text-color); font-size: 0.95rem; transition: color 0.2s; }
+        .toc-sidebar a:hover { color: var(--link-color); }
+        .toc-sidebar .sub-item { padding-left: 20px; font-size: 0.85rem; }
+        .main-content { margin-left: 300px; flex: 1; padding: 40px 60px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: var(--content-max-width); }
+        h1 { font-size: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; margin-bottom: 1.5rem; }
+        h2 { font-size: 1.5rem; margin-top: 2.5rem; padding-bottom: 0.3em; border-bottom: 1px solid #eaecef; }
+        h3 { font-size: 1.25rem; margin-top: 1.5rem; color: #333; }
+        blockquote { padding: 0 1em; color: #636c76; border-left: 0.25em solid #d0d7de; margin: 1.5rem 0; background: #fcfcfc; }
+        .img-wrapper { text-align: center; margin: 2rem 0; }
+        .img-wrapper img { max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid var(--border-color); }
+        .img-caption { display: block; margin-top: 8px; font-size: 0.9rem; color: #666; font-style: italic; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; display: table; }
+        th, td { padding: 10px 14px; border: 1px solid var(--border-color); }
+        th { background-color: #f6f8fa; font-weight: 600; text-align: left; }
+        tr:nth-child(2n) { background-color: #fdfdfd; }
+        tr:hover { background-color: #f8f9fa; }
+        pre { background-color: #f6f8fa; padding: 16px; border-radius: 6px; overflow: auto; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 0.9rem; line-height: 1.45; border: 1px solid #e1e4e8; }
+        details { border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; background: #fafafa; }
+        summary { cursor: pointer; font-weight: 600; color: var(--link-color); outline: none; }
+        @media (max-width: 850px) { .toc-sidebar { display: none; } .main-content { margin-left: 0; padding: 20px; } }
+    </style>
+</head>
+<body>
+
+    <!-- 側辺欄 目次 -->
+    <nav class="toc-sidebar">
+        <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+            <a href="../zh/index.html" style="color: var(--primary-color); font-weight: bold; font-size: 1rem;">🌐 中国語版 (Chinese)</a>
+        </div>
+        <h2>📑 目次</h2>
+        <ul>
+            <li><a href="#background">研究背景 (Background)</a></li>
+            <li><a href="#methodology">TSRF手法 (Methodology)</a></li>
+            <li class="sub-item"><a href="#method-1">1. 1次元熱力学モデリング</a></li>
+            <li class="sub-item"><a href="#method-2">2. SHAPに基づく特徴量エンジニアリング</a></li>
+            <li class="sub-item"><a href="#method-3">3. ランダムフォレスト診断モデル</a></li>
+            <li><a href="#why-shap-rf">なぜ SHAP + RF なのか？</a></li>
+            <li><a href="#results">実験結果と分析 (Results)</a></li>
+            <li><a href="#case-study">ケーススタディ：ピストンリング摩耗</a></li>
+            <li><a href="#bibtex">参考文献 (BibTeX)</a></li>
+        </ul>
+    </nav>
+
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+        <div class="container">
+            <header>
+                <h1>可説明な故障診断論文ノート — 熱力学シミュレーション補助ランダムフォレスト（TSRF）</h1>
+                
+                <blockquote>
+                    <p><strong>船舶用ディーゼルエンジンのための可説明な故障診断フレームワーク</strong></p>
+                    <p><strong>Paper Title:</strong> <em>Thermodynamic simulation-assisted random forest: Towards explainable fault diagnosis of combustion chamber components of marine diesel engines</em><br>
+                    <strong>Journal:</strong> <em>Measurement</em> (Elsevier), Vol. 251, 2025<br>
+                    <strong>DOI:</strong> <a href="https://doi.org/10.1016/j.measurement.2025.117252">10.1016/j.measurement.2025.117252</a></p>
+                </blockquote>
+
+                <p>
+                    <img src="https://img.shields.io/badge/DOI-10.1016%2Fj.measurement.2025.117252-blue" alt="DOI">
+                    <img src="https://img.shields.io/badge/Status-Published-success" alt="Status">
+                    <img src="https://img.shields.io/badge/Topic-Explainable%20AI-orange" alt="Topic">
+                </p>
+            </header>
+
+            <section id="background">
+                <h2>🔍 研究背景 (Background)</h2>
+                <h3>1. 課題の重要性 (The Criticality)</h3>
+                <p>ディーゼルエンジンは船舶推進システムの基幹部品であり、内部構造が極めて複雑である。その中でも、シリンダヘッド、シリンダライナ、ピストンなどの<strong>燃焼室構成部品（Combustion Chamber Components）</strong>は、エンジンの機能維持において決定的な役割を果たす。しかし、これらは長期にわたり高温・高圧の過酷な環境に曝されるため、故障が最も発生しやすい部位の一つである。これらの故障はエンジン性能を損なうだけでなく、航行の安全を脅かす。したがって、熱力学パラメータのモニタリングを通じた早期故障診断は、メンテナンス計画の策定とコスト管理において極めて重要である。</p>
+
+                <h3>2. 従来手法の限界 (Limitations)</h3>
+                <ul>
+                    <li><strong>モデルベース手法:</strong> 物理法則と工学的知見に基づき数学モデルを構築する。限界として、モデリングプロセスが複雑であり、非線形システムや複雑な変数の相互作用への対応が難しく、柔軟性に欠ける。</li>
+                    <li><strong>データ駆動型手法:</strong> 機械学習や深層学習を利用して故障特徴を自動学習する。限界として、<strong>データの質と量に強く依存する</strong>。現実には故障データは極めて稀少であり、モデルの汎化性能が低下しやすい。また、モデルが「ブラックボックス」化し、意思決定の背後にある物理的ロジックを説明できない。</li>
+                    <li><strong>ハイブリッド手法:</strong> 物理モデルとデータ駆動型手法を組み合わせる。限界として、既存の多くは物理モデルを単なるデータ生成ツールとして利用するに留まり、意思決定プロセスにおけるメカニズム分析が不足しているため、計算コストが高く、依然として説明性に乏しい。</li>
+                </ul>
+
+                <h3>3. TSRFの狙い (Motivation)</h3>
+                <p>TSRFは、従来のインテリジェント診断が直面する2つの主要な課題を解決することを目的としている：</p>
+                <ol>
+                    <li><strong>汎化性能の向上</strong>：故障訓練サンプルの不足を補い、多様な運転条件をカバーする。</li>
+                    <li><strong>可説明性の実現</strong>：故障メカニズムに関するドメイン知識を統合し、現場のエンジニアが納得できる診断根拠を提示する。</li>
+                </ol>
+                <p><strong>中核的なアプローチ：</strong> 熱力学シミュレーションを用いて故障特徴を明らかにし、それを事前知識として診断モデルに組み込む。さらにSHAP値を用いることで、故障メカニズムをグローバルおよびローカルの両側面から定量化し、可説明な故障診断を実現する。</p>
+            </section>
+
+            <section id="methodology">
+                <h2>🛠 手法論：熱力学シミュレーション補助ランダムフォレスト</h2>
+                <p>TSRFフレームワークは、データ生成、特徴量の選定と説明、故障分類の3つのコアモジュールで構成される。</p>
+                
+                <div class="img-wrapper">
+                    <img src="https://github.com/user-attachments/assets/b816c11c-e2f3-495e-8007-81ee097a5899" alt="SHAPプロセス">
+                    <span class="img-caption">図1 SHAPに基づくパラメータ選定フロー</span>
+                </div>
+
+                <h3 id="method-1">1. 1次元熱力学モデリングと故障シミュレーション</h3>
+                <p>船舶用ディーゼルエンジンの1次元熱力学モデルを構築し、実験データを用いてキャリブレーションを行った。</p>
+                <div class="img-wrapper">
+                    <img src="https://github.com/user-attachments/assets/cfee6fe5-ab4a-4fb5-aa43-cf26e9a6a093" alt="モデル構成図">
+                    <span class="img-caption">図2 船舶用ディーゼルエンジン熱力学モデルの構成</span>
+                </div>
+
+                <p>このモデルに基づき、物理パラメータの微調整戦略を定義し、以下の5つの典型的な故障をシミュレートした：</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>故障コード</th>
+                            <th>故障タイプ</th>
+                            <th>物理パラメータ調整戦略</th>
+                            <th>物理メカニズム概要</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>F0</strong></td><td>正常 (Normal)</td><td>N/A</td><td>基準状態</td></tr>
+                        <tr><td><strong>F1</strong></td><td>シリンダヘッド亀裂</td><td>ヘッド表面温度を上昇設定</td><td>亀裂による放熱効率低下、局所的な熱暴走</td></tr>
+                        <tr><td><strong>F2</strong></td><td>ピストン溶損</td><td>ピストン表面温度とブローバイ量を上昇</td><td>材料剥離によりシール性が破壊され、高温ガスが漏洩</td></tr>
+                        <tr><td><strong>F3</strong></td><td>シリンダライナ摩耗</td><td>シリンダ径とブローバイ量を上昇</td><td>摩耗による隙間の増大が圧縮ガスの漏洩を招く</td></tr>
+                        <tr><td><strong>F4</strong></td><td>ピストンリング摩耗</td><td>ブローバイ量を上昇</td><td>シール機能の不全により、ブローバイ現象が直接悪化</td></tr>
+                        <tr><td><strong>F5</strong></td><td>リング膠着 (Sticking)</td><td>径、ピストン温度、ブローバイ量を上昇</td><td>カーボン堆積によりリング運動が阻害され、伝熱特性が悪化</td></tr>
+                    </tbody>
+                </table>
+                <blockquote><em>注：この手法により、故障特徴を明確な物理パラメータ（熱伝達率や幾何学的寸法など）と関連付け、「メカニズム駆動型のデータ拡張」を実現した。</em></blockquote>
+
+                <h3 id="method-2">2. SHAPに基づく特徴量エンジニアリング</h3>
+                <p>シミュレーションから出力される膨大な熱力学パラメータに対し、<strong>SHAP (SHapley Additive exPlanations)</strong> 値を導入し、各パラメータの故障診断に対する限界寄与度を定量的に評価した。</p>
+                <ul>
+                    <li><strong>Tree SHAP アルゴリズム</strong>：従来の特徴量選定手法（RFEやカイ二乗検定など）と比較して、SHAPは特徴量間の非線形な相互作用を捉えることができる。</li>
+                </ul>
+                <div class="img-wrapper">
+                    <img src="https://github.com/user-attachments/assets/d8f0503a-4342-41df-8536-09a36673c249" alt="Tree SHAP比較">
+                    <span class="img-caption">図3 SHAPとTree SHAPの相互作用キャプチャの比較</span>
+                </div>
+                <p>研究の結果、<strong>タービン出口温度 (P14)</strong>、<strong>ブローバイ熱流 (P06)</strong>、<strong>ライナ壁面熱流 (P05)</strong> が故障モードを識別するための最重要指標であることが判明した。</p>
+
+                <h3 id="method-3">3. ランダムフォレスト診断モデル</h3>
+                <p>分類器としてランダムフォレストを採用した。これは小標本データにおいて頑健（ロバスト）であるだけでなく、その決定木構造がSHAP解析と天然の親和性を持つためである。</p>
+            </section>
+
+            <section id="why-shap-rf">
+                <h2>🎓 なぜ SHAP + RF なのか？</h2>
+                <h3>1. SHAPとは何か？</h3>
+                <blockquote>
+                    <p>🍎 <strong>例え話：</strong> 3人（特徴量A, B, C）でチームを組み、試合で100点取ったとする。賞金をどう分配するのが公平か？単に得点数を見るのではなく、<strong>「もし、あなたがいなかったらチームの得点は何点減っていたか」</strong>を見るのがSHAPである。</p>
+                </blockquote>
+                <ul>
+                    <li><strong>SHAPの役割：</strong> 各特徴量（例：排気温度）が最終的な予測結果（例：故障F1と判定）に対して、どれだけの<strong>限界寄与</strong>をもたらしたかを計算する。</li>
+                    <li><strong>得られる結果：</strong> どのパラメータが重要かだけでなく、それが故障を<strong>「促進」</strong>させたのか、あるいは正常状態へと<strong>「抑制」</strong>させたのかが可視化される。</li>
+                </ul>
+
+                <h3>2. なぜ「ランダムフォレスト」なのか？</h3>
+                <ul>
+                    <li>数百程度のサンプル数でも過学習を起こさず極めて高い精度を発揮する。</li>
+                    <li>熱力学パラメータのような<strong>構造化された表データ</strong>において、決定木ベースのモデルはニューラルネットワークよりも効率的で精度が高い。</li>
+                </ul>
+
+                <h3>3. "SHAP + ランダムフォレスト" の化学反応：ホワイトボックス化</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>特性</th>
+                            <th>従来のAI診断 (CNN/SVM)</th>
+                            <th>TSRF (RF + SHAP)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>診断結果</strong></td><td>「これは故障F4です」</td><td>「故障F4です。理由はP06(ブローバイ熱流)が異常上昇したためです」</td></tr>
+                        <tr><td><strong>物理的意味</strong></td><td>無し (純粋な数学的近似)</td><td>有り (物理メカニズムと対応)</td></tr>
+                        <tr><td><strong>ユーザーの信頼度</strong></td><td>低い</td><td>高い (エンジニアが検証可能)</td></tr>
+                        <tr><td><strong>トラブルシューティング</strong></td><td>困難</td><td>容易 (重み付けからモデルを修正可能)</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="results">
+                <h2>📊 実験結果と分析 (Results)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Mean Accuracy</th>
+                            <th>Precision</th>
+                            <th>Recall</th>
+                            <th>Interpretability</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>KNN</td><td>89.81%</td><td>90.94%</td><td>89.81%</td><td>Low</td></tr>
+                        <tr><td>SVM</td><td>92.13%</td><td>92.91%</td><td>92.13%</td><td>Medium</td></tr>
+                        <tr><td><strong>TSRF</strong></td><td><strong>99.07%</strong></td><td><strong>94.66%</strong></td><td><strong>94.44%</strong></td><td><strong>High</strong></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="case-study">
+                <h2>💡 ケーススタディ：ピストンリング摩耗 (Case Study)</h2>
+                <div class="img-wrapper">
+                    <img src="https://github.com/user-attachments/assets/251899ec-aed6-4161-9958-aab7a55cc108" alt="F4分析図">
+                    <span class="img-caption">図4 SHAP値に基づくF4故障の解析結果：(a)ウォーターフォール図 (b)ビースウォーム図 (c)相互作用図 (d)依存関係図</span>
+                </div>
+
+                <details>
+                    <summary>熱力学パラメータ一覧を表示（P01-P14）</summary>
+                    <table>
+                        <thead>
+                            <tr><th>番号</th><th>パラメータ名</th><th>単位</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>P01</td><td>筒内圧力 (Cylinder Pressure)</td><td>Pa</td></tr>
+                            <tr><td>P02</td><td>筒内温度 (Cylinder Temperature)</td><td>K</td></tr>
+                            <tr><td>P03</td><td>ピストン壁面熱流 (Piston Wall Heat Flow)</td><td>J/deg</td></tr>
+                            <tr><td>P04</td><td>シリンダヘッド壁面熱流 (Head Wall Heat Flow)</td><td>J/deg</td></tr>
+                            <tr><td>P05</td><td>シリンダライナ壁面熱流 (Liner Wall Heat Flow)</td><td>J/deg</td></tr>
+                            <tr><td>P06</td><td>ブローバイ熱流 (Blow-By Heat Flow)</td><td>J/deg</td></tr>
+                            <tr><td>P07</td><td>ブローバイ質量流量 (Blow-By Mass Flow)</td><td>Kg/s</td></tr>
+                            <tr><td>P08</td><td>タービン出力 (Turbine Power)</td><td>J/s</td></tr>
+                            <tr><td>P09</td><td>排気圧力 (Pressure of Exhaust)</td><td>Pa</td></tr>
+                            <tr><td>P10</td><td>排気温度 (Temperature of Exhaust)</td><td>K</td></tr>
+                            <tr><td>P11</td><td>タービン入口圧力 (Pressure before Turbo)</td><td>Pa</td></tr>
+                            <tr><td>P12</td><td>タービン入口温度 (Temp. before Turbo)</td><td>K</td></tr>
+                            <tr><td>P13</td><td>タービン出口圧力 (Pressure after Turbo)</td><td>Pa</td></tr>
+                            <tr><td>P14</td><td>タービン出口温度 (Temp. after Turbo)</td><td>K</td></tr>
+                        </tbody>
+                    </table>
+                </details>
+
+                <ol>
+                    <li><strong>グローバルな解釈</strong>：SHAP Summary Plotによると、F4故障（リング摩耗）において、ブローバイ関連パラメータの重みが顕著に上昇しており、物理的事実と高度に一致している。</li>
+                    <li><strong>ローカルな解釈</strong>：特定のサンプルにおいて、<strong>P06 (ブローバイ熱流) = 1.641</strong>（正常値より大幅に高い）と<strong>P14</strong>の変動が、故障判定を決定づけていることがウォーターフォール図から読み取れる。</li>
+                </ol>
+            </section>
+
+            <section id="bibtex">
+                <h2>📚 論文情報と BibTeX</h2>
+                <pre>@article{Luo2025TSRF,
+  title = {Thermodynamic simulation-assisted random forest: Towards explainable fault diagnosis of combustion chamber components of marine diesel engines},
+  author = {Congcong Luo and Minghang Zhao and Xuyun Fu and Shisheng Zhong and Song Fu and Kai Zhang and Xiaoxia Yu},
+  journal = {Measurement},
+  volume = {251},
+  pages = {117252},
+  year = {2025},
+  doi = {10.1016/j.measurement.2025.117252},
+  publisher = {Elsevier}
+}</pre>
+                <p>👉 関連リソース（コード・データ）：<strong><a href="https://ts-rf.github.io/zh-CN/">https://ts-rf.github.io/zh-CN/</a></strong></p>
+            </section>
+        </div>
+    </main>
+
+</body>
+</html>
