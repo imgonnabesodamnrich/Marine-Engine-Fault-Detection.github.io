@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paper Notes - TSRF</title>
+    <style>
+        /* 保持和你中文版完全一致的 CSS */
+        :root { --primary-color: #0366d6; --sidebar-bg: #f8f9fa; --content-max-width: 900px; --border-color: #d0d7de; --text-color: #1f2328; --link-color: #0969da; }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.6; color: var(--text-color); margin: 0; background-color: #ffffff; display: flex; }
+        .toc-sidebar { width: 300px; height: 100vh; position: fixed; left: 0; top: 0; background: var(--sidebar-bg); border-right: 1px solid var(--border-color); padding: 20px; overflow-y: auto; z-index: 10; }
+        .toc-sidebar h2 { font-size: 1.2rem; margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .toc-sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .toc-sidebar li { margin: 10px 0; }
+        .toc-sidebar a { text-decoration: none; color: var(--text-color); font-size: 0.95rem; transition: color 0.2s; }
+        .toc-sidebar a:hover { color: var(--link-color); }
+        .toc-sidebar .sub-item { padding-left: 20px; font-size: 0.85rem; }
+        .main-content { margin-left: 300px; flex: 1; padding: 40px 60px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: var(--content-max-width); }
+        h1 { font-size: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; margin-bottom: 1.5rem; }
+        h2 { font-size: 1.5rem; margin-top: 2.5rem; padding-bottom: 0.3em; border-bottom: 1px solid #eaecef; }
+        h3 { font-size: 1.25rem; margin-top: 1.5rem; color: #333; }
+        blockquote { padding: 0 1em; color: #636c76; border-left: 0.25em solid #d0d7de; margin: 1.5rem 0; background: #fcfcfc; }
+        .img-wrapper { text-align: center; margin: 2rem 0; }
+        .img-wrapper img { max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid var(--border-color); }
+        .img-caption { display: block; margin-top: 8px; font-size: 0.9rem; color: #666; font-style: italic; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; display: block; overflow-x: auto; }
+        th, td { padding: 10px 14px; border: 1px solid var(--border-color); }
+        th { background-color: #f6f8fa; font-weight: 600; }
+        tr:nth-child(2n) { background-color: #fdfdfd; }
+        tr:hover { background-color: #f8f9fa; }
+        pre { background-color: #f6f8fa; padding: 16px; border-radius: 6px; overflow: auto; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 0.9rem; line-height: 1.45; border: 1px solid #e1e4e8; }
+        details { border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; background: #fafafa; }
+        summary { cursor: pointer; font-weight: 600; color: var(--link-color); outline: none; }
+        @media (max-width: 850px) { .toc-sidebar { display: none; } .main-content { margin-left: 0; padding: 20px; } }
+    </style>
+</head>
+<body>
+
+    <nav class="toc-sidebar">
+        <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+            <a href="../zh/index.html" style="color: var(--primary-color); font-weight: bold; font-size: 1rem;">🌐 中文版 (Chinese)</a>
+        </div>
+        <h2>📑 TOC</h2>
+        <ul>
+            <li><a href="#background">Background</a></li>
+            <li><a href="#methodology">Methodology</a></li>
+            <li class="sub-item"><a href="#method-1">1. Thermodynamic Modeling</a></li>
+            <li class="sub-item"><a href="#method-2">2. SHAP Analysis</a></li>
+            <li class="sub-item"><a href="#method-3">3. Random Forest Model</a></li>
+            <li><a href="#why-shap-rf">Why SHAP + RF?</a></li>
+            <li><a href="#results">Results</a></li>
+            <li><a href="#case-study">Case Study: Ring Wear</a></li>
+            <li><a href="#bibtex">BibTeX</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <header>
+                <h1>Thermodynamic Simulation-assisted Random Forest (TSRF)</h1>
+                <blockquote>
+                    <p><strong>An Explainable Fault Diagnosis Framework for Marine Diesel Engines</strong></p>
+                    <p><strong>Paper Title:</strong> <em>Thermodynamic simulation-assisted random forest: Towards explainable fault diagnosis of combustion chamber components of marine diesel engines</em><br>
+                    <strong>Journal:</strong> <em>Measurement</em> (Elsevier), Vol. 251, 2025</p>
+                </blockquote>
+            </header>
+
+            <section id="background">
+                <h2>🔍 Background</h2>
+                <p>Marine diesel engines are critical for propulsion. Combustion chamber components—including head, liner, and piston—are prone to failure due to high heat and pressure. Traditional data-driven methods struggle with data scarcity and lack of explainability.</p>
+            </section>
+
+            <section id="methodology">
+                <h2>🛠 Methodology</h2>
+                <div class="img-wrapper">
+                    <img src="https://github.com/user-attachments/assets/b816c11c-e2f3-495e-8007-81ee097a5899" alt="SHAP Flow">
+                    <span class="img-caption">Fig.1 Parameter selection process based on SHAP</span>
+                </div>
+
+                <h3 id="method-1">1. 1D Thermodynamic Modeling</h3>
+                <p>A calibrated 1D model simulates 5 typical faults by tuning physical parameters:</p>
+                <table>
+                    <thead>
+                        <tr><th>Code</th><th>Fault Type</th><th>Parameter Tuning Strategy</th><th>Mechanism</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>F0</strong></td><td>Normal</td><td>N/A</td><td>Baseline</td></tr>
+                        <tr><td><strong>F1</strong></td><td>Head cracking</td><td>Increase Head Temp</td><td>Heat dissipation failure</td></tr>
+                        <tr><td><strong>F2</strong></td><td>Piston ablation</td><td>Increase Piston Temp & Leakage</td><td>High temp gas bypass</td></tr>
+                        <tr><td><strong>F3</strong></td><td>Liner wear</td><td>Increase Diameter & Leakage</td><td>Compression loss</td></tr>
+                        <tr><td><strong>F4</strong></td><td>Ring wear</td><td>Increase Leakage</td><td>Direct Blow-by increase</td></tr>
+                        <tr><td><strong>F5</strong></td><td>Ring sticking</td><td>Increase all related parameters</td><td>Carbon accumulation</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 id="method-2">2. SHAP-based Feature Engineering</h3>
+                <p>Utilizing <strong>Tree SHAP</strong> to quantify marginal contributions of thermodynamic parameters.</p>
+                <div class="img-wrapper">
+                    <img src="https://github.com/user-attachments/assets/d8f0503a-4342-41df-8536-09a36673c249" alt="Contrast">
+                    <span class="img-caption">Fig.3 SHAP vs. Tree SHAP interaction capture</span>
+                </div>
+
+                <h3 id="method-3">3. Random Forest Diagnostic Model</h3>
+                <p>Classifier trained on filtered parameters. High accuracy on small datasets.</p>
+            </section>
+
+            <section id="results">
+                <h2>📊 Results</h2>
+                <table>
+                    <thead>
+                        <tr><th>Method</th><th>Mean Accuracy</th><th>Precision</th><th>Recall</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>KNN</td><td>89.81%</td><td>90.94%</td><td>89.81%</td></tr>
+                        <tr><td>SVM</td><td>92.13%</td><td>92.91%</td><td>92.13%</td></tr>
+                        <tr><td><strong>TSRF</strong></td><td><strong>99.07%</strong></td><td><strong>94.66%</strong></td><td><strong>94.44%</strong></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="case-study">
+                <h2>💡 Case Study: Piston Ring Wear (F4)</h2>
+                <div class="img-wrapper">
+                    <img src="https://github.com/user-attachments/assets/251899ec-aed6-4161-9958-aab7a55cc108" alt="F4 Case">
+                    <span class="img-caption">Fig.4 Analysis of F4 fault based on SHAP values</span>
+                </div>
+                <p>The SHAP waterfall plot shows <strong>P06 (Blow-by heat flow) = 1.641</strong> is the primary contributor, aligning with physical facts.</p>
+            </section>
+
+            <section id="bibtex">
+                <h2>📚 BibTeX</h2>
+                <pre>@article{Luo2025TSRF,
+  title = {Thermodynamic simulation-assisted random forest: Towards explainable fault diagnosis...},
+  author = {Congcong Luo et al.},
+  journal = {Measurement},
+  year = {2025},
+  doi = {10.1016/j.measurement.2025.117252}
+}</pre>
+            </section>
+        </div>
+    </main>
+
+</body>
+</html>
