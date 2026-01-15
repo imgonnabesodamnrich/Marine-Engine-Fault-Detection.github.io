@@ -3,120 +3,302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paper Notes - TSRF</title>
+    <title>Paper Notes - TSRF Explainable Fault Diagnosis</title>
     <style>
-        /* 保持和你中文版完全一致的 CSS */
-        :root { --primary-color: #0366d6; --sidebar-bg: #f8f9fa; --content-max-width: 900px; --border-color: #d0d7de; --text-color: #1f2328; --link-color: #0969da; }
+        :root {
+            --primary-color: #0366d6;
+            --sidebar-bg: #f8f9fa;
+            --content-max-width: 900px;
+            --border-color: #d0d7de;
+            --text-color: #1f2328;
+            --link-color: #0969da;
+        }
+
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.6; color: var(--text-color); margin: 0; background-color: #ffffff; display: flex; }
-        .toc-sidebar { width: 300px; height: 100vh; position: fixed; left: 0; top: 0; background: var(--sidebar-bg); border-right: 1px solid var(--border-color); padding: 20px; overflow-y: auto; z-index: 10; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-color);
+            margin: 0;
+            background-color: #ffffff;
+            display: flex;
+        }
+
+        /* Sidebar TOC Style */
+        .toc-sidebar {
+            width: 300px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
         .toc-sidebar h2 { font-size: 1.2rem; margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
         .toc-sidebar ul { list-style: none; padding: 0; margin: 0; }
         .toc-sidebar li { margin: 10px 0; }
-        .toc-sidebar a { text-decoration: none; color: var(--text-color); font-size: 0.95rem; transition: color 0.2s; }
+        .toc-sidebar a { 
+            text-decoration: none; 
+            color: var(--text-color); 
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
         .toc-sidebar a:hover { color: var(--link-color); }
         .toc-sidebar .sub-item { padding-left: 20px; font-size: 0.85rem; }
-        .main-content { margin-left: 300px; flex: 1; padding: 40px 60px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: var(--content-max-width); }
+
+        /* Main Content Layout */
+        .main-content {
+            margin-left: 300px;
+            flex: 1;
+            padding: 40px 60px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: var(--content-max-width);
+        }
+
+        /* Typography */
         h1 { font-size: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; margin-bottom: 1.5rem; }
         h2 { font-size: 1.5rem; margin-top: 2.5rem; padding-bottom: 0.3em; border-bottom: 1px solid #eaecef; }
         h3 { font-size: 1.25rem; margin-top: 1.5rem; color: #333; }
-        blockquote { padding: 0 1em; color: #636c76; border-left: 0.25em solid #d0d7de; margin: 1.5rem 0; background: #fcfcfc; }
+
+        /* Blockquote */
+        blockquote {
+            padding: 0 1em;
+            color: #636c76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 1.5rem 0;
+            background: #fcfcfc;
+        }
+
+        /* Image Wrapper */
         .img-wrapper { text-align: center; margin: 2rem 0; }
-        .img-wrapper img { max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid var(--border-color); }
+        .img-wrapper img { 
+            max-width: 100%; 
+            height: auto; 
+            border-radius: 4px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+            border: 1px solid var(--border-color);
+        }
         .img-caption { display: block; margin-top: 8px; font-size: 0.9rem; color: #666; font-style: italic; }
-        table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; display: block; overflow-x: auto; }
-        th, td { padding: 10px 14px; border: 1px solid var(--border-color); }
-        th { background-color: #f6f8fa; font-weight: 600; }
+
+        /* Table Style */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0 1.5rem;
+            display: table;
+        }
+        th, td {
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+        }
+        th { background-color: #f6f8fa; font-weight: 600; text-align: left; }
         tr:nth-child(2n) { background-color: #fdfdfd; }
         tr:hover { background-color: #f8f9fa; }
-        pre { background-color: #f6f8fa; padding: 16px; border-radius: 6px; overflow: auto; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 0.9rem; line-height: 1.45; border: 1px solid #e1e4e8; }
-        details { border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; background: #fafafa; }
+
+        /* Code Block */
+        pre {
+            background-color: #f6f8fa;
+            padding: 16px;
+            border-radius: 6px;
+            overflow: auto;
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+            font-size: 0.9rem;
+            line-height: 1.45;
+            border: 1px solid #e1e4e8;
+        }
+
+        /* Details list */
+        details {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            background: #fafafa;
+        }
         summary { cursor: pointer; font-weight: 600; color: var(--link-color); outline: none; }
-        @media (max-width: 850px) { .toc-sidebar { display: none; } .main-content { margin-left: 0; padding: 20px; } }
+
+        @media (max-width: 850px) {
+            .toc-sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
     </style>
 </head>
 <body>
 
+    <!-- Sidebar TOC -->
     <nav class="toc-sidebar">
         <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
-            <a href="../zh/index.html" style="color: var(--primary-color); font-weight: bold; font-size: 1rem;">🌐 中文版 (Chinese)</a>
+            <a href="../zh/index.html" style="color: var(--primary-color); font-weight: bold; font-size: 1rem;">🌐 View in Chinese</a>
         </div>
         <h2>📑 TOC</h2>
         <ul>
             <li><a href="#background">Background</a></li>
-            <li><a href="#methodology">Methodology</a></li>
+            <li><a href="#methodology">TSRF Methodology</a></li>
             <li class="sub-item"><a href="#method-1">1. Thermodynamic Modeling</a></li>
-            <li class="sub-item"><a href="#method-2">2. SHAP Analysis</a></li>
+            <li class="sub-item"><a href="#method-2">2. SHAP Feature Engineering</a></li>
             <li class="sub-item"><a href="#method-3">3. Random Forest Model</a></li>
             <li><a href="#why-shap-rf">Why SHAP + RF?</a></li>
-            <li><a href="#results">Results</a></li>
+            <li><a href="#results">Results and Analysis</a></li>
             <li><a href="#case-study">Case Study: Ring Wear</a></li>
-            <li><a href="#bibtex">BibTeX</a></li>
+            <li><a href="#bibtex">BibTeX Reference</a></li>
         </ul>
     </nav>
 
+    <!-- Main Content -->
     <main class="main-content">
         <div class="container">
             <header>
-                <h1>Thermodynamic Simulation-assisted Random Forest (TSRF)</h1>
+                <h1>Thermodynamic Simulation-assisted Random Forest (TSRF) - Paper Notes</h1>
+                
                 <blockquote>
                     <p><strong>An Explainable Fault Diagnosis Framework for Marine Diesel Engines</strong></p>
                     <p><strong>Paper Title:</strong> <em>Thermodynamic simulation-assisted random forest: Towards explainable fault diagnosis of combustion chamber components of marine diesel engines</em><br>
-                    <strong>Journal:</strong> <em>Measurement</em> (Elsevier), Vol. 251, 2025</p>
+                    <strong>Journal:</strong> <em>Measurement</em> (Elsevier), Vol. 251, 2025<br>
+                    <strong>DOI:</strong> <a href="https://doi.org/10.1016/j.measurement.2025.117252">10.1016/j.measurement.2025.117252</a></p>
                 </blockquote>
+
+                <p>
+                    <img src="https://img.shields.io/badge/DOI-10.1016%2Fj.measurement.2025.117252-blue" alt="DOI">
+                    <img src="https://img.shields.io/badge/Status-Published-success" alt="Status">
+                    <img src="https://img.shields.io/badge/Topic-Explainable%20AI-orange" alt="Topic">
+                </p>
             </header>
 
             <section id="background">
-                <h2>🔍 Background</h2>
-                <p>Marine diesel engines are critical for propulsion. Combustion chamber components—including head, liner, and piston—are prone to failure due to high heat and pressure. Traditional data-driven methods struggle with data scarcity and lack of explainability.</p>
+                <h2>🔍 Research Background</h2>
+                <h3>1. The Criticality</h3>
+                <p>The diesel engine is the core component of marine propulsion systems, with a complex internal structure and numerous parts. Among these, the <strong>Combustion Chamber Components</strong>—including the cylinder head, liner, and piston—are vital to the engine's performance. Due to long-term exposure to high-temperature and high-pressure environments, the combustion chamber is one of the most failure-prone areas. These faults not only degrade performance but also threaten navigation safety. Therefore, early fault diagnosis through thermodynamic parameters is crucial for maintenance and cost control.</p>
+
+                <h3>2. Limitations of Current Approaches</h3>
+                <ul>
+                    <li><strong>Model-Based Methods:</strong> Based on physical laws and engineering knowledge. <em>Limitation:</em> Complex modeling process, difficulty in handling nonlinear systems and complex variable interactions, and lack of flexibility.</li>
+                    <li><strong>Data-Driven Methods:</strong> Automate feature learning via ML/DL. <em>Limitation:</em> <strong>Heavily dependent on data quality and quantity</strong>. Fault data is extremely scarce in reality, leading to poor generalizability. Moreover, models are often "Black Boxes," making it hard to explain the physical logic behind decisions.</li>
+                    <li><strong>Hybrid Methods:</strong> Combining physical models with data-driven approaches. <em>Limitation:</em> Most current methods only use physical models as data generation tools, lacking deep analysis of the decision process, leading to high computational costs and insufficient explainability.</li>
+                </ul>
+
+                <h3>3. Motivation of TSRF</h3>
+                <p>TSRF aims to solve two major challenges in traditional intelligent diagnosis:</p>
+                <ol>
+                    <li><strong>Low Generalizability:</strong> Traditional models struggle to cover real-world conditions due to a lack of fault training samples.</li>
+                    <li><strong>Poor Explainability:</strong> Lack of domain knowledge integration makes models less convincing for marine engineers.</li>
+                </ol>
+                <p><strong>Core Concept:</strong> Utilize thermodynamic simulation to reveal fault features as prior knowledge embedded in diagnostic models, and quantify the fault mechanism using SHAP values from both global and local dimensions to achieve explainable diagnosis.</p>
             </section>
 
             <section id="methodology">
-                <h2>🛠 Methodology</h2>
+                <h2>🛠 Thermodynamic Simulation-assisted Random Forest (Methodology)</h2>
+                <p>The TSRF framework consists of three core modules: data generation, feature screening/explanation, and fault classification.</p>
+                
                 <div class="img-wrapper">
                     <img src="https://github.com/user-attachments/assets/b816c11c-e2f3-495e-8007-81ee097a5899" alt="SHAP Flow">
-                    <span class="img-caption">Fig.1 Parameter selection process based on SHAP</span>
+                    <span class="img-caption">Fig. 1 Parameter screening process based on SHAP</span>
                 </div>
 
-                <h3 id="method-1">1. 1D Thermodynamic Modeling</h3>
-                <p>A calibrated 1D model simulates 5 typical faults by tuning physical parameters:</p>
+                <h3 id="method-1">1. 1D Thermodynamic Modeling and Fault Simulation</h3>
+                <p>A 1D Thermodynamic Model of a marine diesel engine was constructed and calibrated using experimental data.</p>
+                <div class="img-wrapper">
+                    <img src="https://github.com/user-attachments/assets/cfee6fe5-ab4a-4fb5-aa43-cf26e9a6a093" alt="Model Scheme">
+                    <span class="img-caption">Fig. 2 Schematic of the marine diesel engine thermodynamic model</span>
+                </div>
+
+                <p>Based on this model, physical parameter tuning strategies were defined to simulate 5 typical faults:</p>
                 <table>
                     <thead>
-                        <tr><th>Code</th><th>Fault Type</th><th>Parameter Tuning Strategy</th><th>Mechanism</th></tr>
+                        <tr>
+                            <th>Fault Code</th>
+                            <th>Fault Type</th>
+                            <th>Parameter Tuning Strategy</th>
+                            <th>Physical Mechanism Description</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        <tr><td><strong>F0</strong></td><td>Normal</td><td>N/A</td><td>Baseline</td></tr>
-                        <tr><td><strong>F1</strong></td><td>Head cracking</td><td>Increase Head Temp</td><td>Heat dissipation failure</td></tr>
-                        <tr><td><strong>F2</strong></td><td>Piston ablation</td><td>Increase Piston Temp & Leakage</td><td>High temp gas bypass</td></tr>
-                        <tr><td><strong>F3</strong></td><td>Liner wear</td><td>Increase Diameter & Leakage</td><td>Compression loss</td></tr>
-                        <tr><td><strong>F4</strong></td><td>Ring wear</td><td>Increase Leakage</td><td>Direct Blow-by increase</td></tr>
-                        <tr><td><strong>F5</strong></td><td>Ring sticking</td><td>Increase all related parameters</td><td>Carbon accumulation</td></tr>
+                        <tr><td><strong>F0</strong></td><td>Normal</td><td>N/A</td><td>Baseline state</td></tr>
+                        <tr><td><strong>F1</strong></td><td>Head cracking</td><td>Increase cylinder head surface temperature</td><td>Cracks reduce heat dissipation efficiency, causing local thermal runaway</td></tr>
+                        <tr><td><strong>F2</strong></td><td>Piston ablation</td><td>Increase piston surface temperature & leakage</td><td>Material spalling destroys sealing, leading to bypass of high-temp gas</td></tr>
+                        <tr><td><strong>F3</strong></td><td>Liner wear</td><td>Increase cylinder diameter & leakage</td><td>Increased gap leads to compression gas leakage</td></tr>
+                        <tr><td><strong>F4</strong></td><td>Ring wear</td><td>Increase leakage volume</td><td>Seal failure directly intensifies the Blow-by phenomenon</td></tr>
+                        <tr><td><strong>F5</strong></td><td>Ring sticking</td><td>Increase diameter, piston temp, & leakage</td><td>Carbon deposits obstruct ring movement, increasing thermal resistance</td></tr>
                     </tbody>
                 </table>
+                <blockquote><em>Note: By this method, fault features are associated with explicit physical parameters (e.g., heat transfer coefficients), achieving "Mechanism-Driven Data Augmentation."</em></blockquote>
 
                 <h3 id="method-2">2. SHAP-based Feature Engineering</h3>
-                <p>Utilizing <strong>Tree SHAP</strong> to quantify marginal contributions of thermodynamic parameters.</p>
+                <p>Given the numerous output parameters from simulation, <strong>SHAP (SHapley Additive exPlanations)</strong> values were introduced to quantitatively evaluate the marginal contribution of each parameter.</p>
+                <ul>
+                    <li><strong>Tree SHAP Algorithm:</strong> Compared to traditional selection methods (RFE, Chi-square), SHAP captures nonlinear interactions between features.</li>
+                </ul>
                 <div class="img-wrapper">
-                    <img src="https://github.com/user-attachments/assets/d8f0503a-4342-41df-8536-09a36673c249" alt="Contrast">
-                    <span class="img-caption">Fig.3 SHAP vs. Tree SHAP interaction capture</span>
+                    <img src="https://github.com/user-attachments/assets/d8f0503a-4342-41df-8536-09a36673c249" alt="Tree SHAP Contrast">
+                    <span class="img-caption">Fig. 3 Comparison between SHAP and Tree SHAP</span>
                 </div>
+                <p>Findings show that <strong>Turbine Outlet Temperature (P14)</strong>, <strong>Blow-by Heat Flow (P06)</strong>, and <strong>Liner Wall Heat Flow (P05)</strong> are the most critical indicators for distinguishing fault modes.</p>
 
                 <h3 id="method-3">3. Random Forest Diagnostic Model</h3>
-                <p>Classifier trained on filtered parameters. High accuracy on small datasets.</p>
+                <p>Random Forest was chosen as the classifier not only for its robustness with small samples but also because its tree structure is naturally compatible with SHAP analysis.</p>
+            </section>
+
+            <section id="why-shap-rf">
+                <h2>🎓 Why SHAP + RF?</h2>
+                <h3>1. What is SHAP?</h3>
+                <blockquote>
+                    <p>🍎 <strong>Example:</strong> Suppose 3 people (Features A, B, C) team up to score 100 points in a game. How to distribute the prize fairly? It's not enough to see who scored most; you must see <strong>how much the team score would drop if you were missing</strong>.</p>
+                </blockquote>
+                <ul>
+                    <li><strong>SHAP's Job:</strong> It calculates the marginal contribution of each feature (e.g., "Exhaust Temp") to the final prediction (e.g., "Fault F1").</li>
+                    <li><strong>The Result:</strong> It tells you not only which parameter is important, but whether it is <strong>positively pushing</strong> (causing fault) or <strong>negatively inhibiting</strong> (normalizing the state).</li>
+                </ul>
+
+                <h3>2. Why "Random Forest" instead of "Neural Networks"?</h3>
+                <ul>
+                    <li>RF achieves high accuracy with hundreds of samples, whereas NNs often require thousands to avoid overfitting.</li>
+                    <li>Thermodynamic parameters are typical <strong>structured tabular data</strong>. Tree-based models generally outperform NNs for such data in terms of efficiency and accuracy.</li>
+                </ul>
+
+                <h3>3. The "White-Box" Chemistry of SHAP + RF</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Traditional AI (CNN/SVM)</th>
+                            <th>TSRF (RF + SHAP)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Diagnosis</strong></td><td>"This is F4 fault."</td><td>"This is F4, because Blow-by Heat Flow (P06) is abnormally high."</td></tr>
+                        <tr><td><strong>Physics</strong></td><td>None (Math fitting only)</td><td>High (Corresponds to physical mechanisms)</td></tr>
+                        <tr><td><strong>Trustworthiness</strong></td><td>Low (Hard for engineers to trust)</td><td>High (Aligns with engineering experience)</td></tr>
+                        <tr><td><strong>Debugging</strong></td><td>Difficult</td><td>Easy (Can correct model via parameter weights)</td></tr>
+                    </tbody>
+                </table>
             </section>
 
             <section id="results">
-                <h2>📊 Results</h2>
+                <h2>📊 Experimental Results and Analysis</h2>
                 <table>
                     <thead>
-                        <tr><th>Method</th><th>Mean Accuracy</th><th>Precision</th><th>Recall</th></tr>
+                        <tr>
+                            <th>Method</th>
+                            <th>Mean Accuracy</th>
+                            <th>Precision</th>
+                            <th>Recall</th>
+                            <th>Interpretability</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        <tr><td>KNN</td><td>89.81%</td><td>90.94%</td><td>89.81%</td></tr>
-                        <tr><td>SVM</td><td>92.13%</td><td>92.91%</td><td>92.13%</td></tr>
-                        <tr><td><strong>TSRF</strong></td><td><strong>99.07%</strong></td><td><strong>94.66%</strong></td><td><strong>94.44%</strong></td></tr>
+                        <tr><td>KNN</td><td>89.81%</td><td>90.94%</td><td>89.81%</td><td>Low</td></tr>
+                        <tr><td>SVM</td><td>92.13%</td><td>92.91%</td><td>92.13%</td><td>Medium</td></tr>
+                        <tr><td><strong>TSRF</strong></td><td><strong>99.07%</strong></td><td><strong>94.66%</strong></td><td><strong>94.44%</strong></td><td><strong>High</strong></td></tr>
                     </tbody>
                 </table>
             </section>
@@ -124,21 +306,54 @@
             <section id="case-study">
                 <h2>💡 Case Study: Piston Ring Wear (F4)</h2>
                 <div class="img-wrapper">
-                    <img src="https://github.com/user-attachments/assets/251899ec-aed6-4161-9958-aab7a55cc108" alt="F4 Case">
-                    <span class="img-caption">Fig.4 Analysis of F4 fault based on SHAP values</span>
+                    <img src="https://github.com/user-attachments/assets/251899ec-aed6-4161-9958-aab7a55cc108" alt="F4 Case Study">
+                    <span class="img-caption">Fig. 4 Fault analysis for Ring Wear (F4) based on SHAP values: (a) Waterfall; (b) Beeswarm; (c) Interaction; (d) Dependence</span>
                 </div>
-                <p>The SHAP waterfall plot shows <strong>P06 (Blow-by heat flow) = 1.641</strong> is the primary contributor, aligning with physical facts.</p>
+
+                <details>
+                    <summary>Click to view full Thermodynamic Parameter List (P01-P14)</summary>
+                    <table>
+                        <thead>
+                            <tr><th>No.</th><th>Parameter Name</th><th>Unit</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>P01</td><td>Cylinder Pressure</td><td>Pa</td></tr>
+                            <tr><td>P02</td><td>Cylinder Temperature</td><td>K</td></tr>
+                            <tr><td>P03</td><td>Piston Wall Heat Flow</td><td>J/deg</td></tr>
+                            <tr><td>P04</td><td>Head Wall Heat Flow</td><td>J/deg</td></tr>
+                            <tr><td>P05</td><td>Liner Wall Heat Flow</td><td>J/deg</td></tr>
+                            <tr><td>P06</td><td>Blow-By Heat Flow</td><td>J/deg</td></tr>
+                            <tr><td>P07</td><td>Blow-By Mass Flow</td><td>Kg/s</td></tr>
+                            <tr><td>P08</td><td>Turbine Power</td><td>J/s</td></tr>
+                            <tr><td>P09</td><td>Pressure of Exhaust</td><td>Pa</td></tr>
+                            <tr><td>P10</td><td>Temperature of Exhaust</td><td>K</td></tr>
+                            <tr><td>P11</td><td>Pressure before Turbo</td><td>Pa</td></tr>
+                            <tr><td>P12</td><td>Temp. before Turbo</td><td>K</td></tr>
+                            <tr><td>P13</td><td>Pressure after Turbo</td><td>Pa</td></tr>
+                            <tr><td>P14</td><td>Temp. after Turbo</td><td>K</td></tr>
+                        </tbody>
+                    </table>
+                </details>
+
+                <ol>
+                    <li><strong>Global Interpretation:</strong> The SHAP summary plot shows that for F4, the weight of blow-by related parameters rises significantly, consistent with physical facts.</li>
+                    <li><strong>Local Interpretation:</strong> For a specific sample, the Waterfall plot reveals: <strong>P06 (Blow-by heat flow) = 1.641</strong> (abnormally high) and <strong>P14</strong> fluctuations together drive the F4 diagnosis.</li>
+                </ol>
             </section>
 
             <section id="bibtex">
-                <h2>📚 BibTeX</h2>
+                <h2>📚 Paper Link & BibTeX</h2>
                 <pre>@article{Luo2025TSRF,
-  title = {Thermodynamic simulation-assisted random forest: Towards explainable fault diagnosis...},
-  author = {Congcong Luo et al.},
+  title = {Thermodynamic simulation-assisted random forest: Towards explainable fault diagnosis of combustion chamber components of marine diesel engines},
+  author = {Congcong Luo and Minghang Zhao and Xuyun Fu and Shisheng Zhong and Song Fu and Kai Zhang and Xiaoxia Yu},
   journal = {Measurement},
+  volume = {251},
+  pages = {117252},
   year = {2025},
-  doi = {10.1016/j.measurement.2025.117252}
+  doi = {10.1016/j.measurement.2025.117252},
+  publisher = {Elsevier}
 }</pre>
+                <p>👉 Resource Package: <strong><a href="https://ts-rf.github.io/zh-CN/">https://ts-rf.github.io/zh-CN/</a></strong></p>
             </section>
         </div>
     </main>
